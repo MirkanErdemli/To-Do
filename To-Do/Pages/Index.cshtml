@@ -1,0 +1,252 @@
+﻿@page
+@model IndexModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: white;
+        }
+
+        #right-side {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .class-button, .subclass-button {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: blue;
+            border: 1px solid #999;
+            cursor: pointer;
+            color: white;
+        }
+
+            .subclass-button.selected {
+                background-color: green;
+            }
+
+        #subclass-container {
+            margin-bottom: 20px;
+        }
+
+        .toolbar button {
+            width: auto;
+            padding: 5px 10px;
+        }
+
+        #addItemButton {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+            border: none;
+            color: white;
+            font-size: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Styles for the input rectangle */
+        .input-rectangle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Styles for the input rectangle */
+        .input-rectangle {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Styles for the square button inside the rectangle */
+        .square-button {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            cursor: pointer;
+            margin-left: 5px; /* Add margin to separate the button from the input */
+        }
+
+        .delete-button {
+            color: white;
+            text-align: center;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="right-side">
+        <div class="toolbar">
+            <button class="class-button" id="all">All</button>
+            <button class="class-button" id="addClass">Add Class</button>
+            <button class="class-button" id="deleteClass">Delete Class</button>
+        </div>
+        <div id="subclass-container"></div>
+        <button id="addItemButton">+</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const subclassContainer = document.getElementById("subclass-container");
+            let selectedClass = "all"; // Default to "All" class
+
+            // Event listener for "All" button
+            document.getElementById("all").addEventListener("click", function () {
+                selectedClass = "all";
+                updateVisibility();
+                updateClassColors();
+            });
+
+            // Event listener for Add Class button
+            document.getElementById("addClass").addEventListener("click", function () {
+                const newClassName = prompt("Enter the name of the new class:");
+                if (newClassName) {
+                    createClassButton(newClassName);
+                }
+            });
+
+            // Event listener for Delete Class button
+            document.getElementById("deleteClass").addEventListener("click", function () {
+                const classToDelete = prompt("Enter the name of the class to delete:");
+                if (classToDelete && classToDelete !== "all" && classToDelete !== "addClass" && classToDelete !== "deleteClass") {
+                    const classButton = document.getElementById(classToDelete);
+                    if (classButton) {
+                        classButton.remove();
+                        // If the deleted class was selected, switch to "All"
+                        if (selectedClass === classToDelete) {
+                            selectedClass = "all";
+                            updateVisibility();
+                            updateClassColors();
+                        }
+                    } else {
+                        alert("Class not found.");
+                    }
+                } else {
+                    alert("Invalid class name.");
+                }
+            });
+
+            // Event listener for "+" button
+            document.getElementById("addItemButton").addEventListener("click", function () {
+                const userInput = prompt("Enter the item name:");
+                if (userInput) {
+                    createItem(userInput);
+                }
+            });
+
+            // Function to create a new class button
+            function createClassButton(className) {
+                const classButton = document.createElement("button");
+                classButton.classList.add("subclass-button");
+                classButton.id = className.toLowerCase();
+                classButton.textContent = className;
+
+                // Event listener for class button click
+                classButton.addEventListener("click", function () {
+                    // Set the selected class and update visibility
+                    selectedClass = classButton.id;
+                    updateVisibility();
+                    updateClassColors();
+                });
+
+                subclassContainer.appendChild(classButton);
+            }
+
+            // Function to update the colors of classes and subclasses based on the selected class
+            function updateClassColors() {
+                const allButtons = document.querySelectorAll(".class-button, .subclass-button");
+                allButtons.forEach(button => {
+                    if (button.id === selectedClass) {
+                        button.style.backgroundColor = "green"; // Change the background color to green
+                    } else {
+                        button.style.backgroundColor = "blue"; // Change the background color back to blue
+                    }
+                });
+            }
+
+            // Function to create a new item and input rectangle
+            function createItem(itemName) {
+                // Create the input rectangle dynamically
+                const inputRectangle = document.createElement("div");
+                inputRectangle.classList.add("input-rectangle");
+                inputRectangle.classList.add(selectedClass); // Add class for tracking visibility
+
+                // Input field inside the rectangle
+                const inputField = document.createElement("input");
+                inputField.type = "text";
+                inputField.value = itemName;
+                inputField.readOnly = true;
+                inputRectangle.appendChild(inputField);
+
+                // Add some spacing between input field and square button
+                inputRectangle.appendChild(document.createElement("br"));
+
+                // Red delete button inside the rectangle with a centered white "X"
+                const deleteButton = document.createElement("div");
+                deleteButton.classList.add("square-button", "delete-button");
+                deleteButton.innerHTML = '<div style="text-align: center; line-height: 20px; color: white;">X</div>';
+                deleteButton.addEventListener("click", function () {
+                    inputRectangle.remove();
+                    updateVisibility(); // Update the visibility after removing the rectangle
+                });
+                inputRectangle.appendChild(deleteButton);
+
+                // Append the input rectangle to the right side
+                document.getElementById("right-side").appendChild(inputRectangle);
+
+                // Update the visibility when a new item is created
+                updateVisibility();
+            }
+
+            // Function to update the visibility of rectangles based on the selected class
+            function updateVisibility() {
+                const allRectangles = document.querySelectorAll(".input-rectangle");
+                allRectangles.forEach(rectangle => {
+                    if (selectedClass === "all" || rectangle.classList.contains(selectedClass) || rectangle.classList.contains("all")) {
+                        rectangle.style.display = "flex";
+                    } else {
+                        rectangle.style.display = "none";
+                    }
+                });
+
+                updateClassColors(); // Update class colors
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
